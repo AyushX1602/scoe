@@ -1,0 +1,269 @@
+#include <iostream>
+#include <stack>
+
+using namespace std;
+
+class Node
+{
+private:
+    char data;
+    Node *left;
+    Node *right;
+public:
+    Node(char data = '0') // FIX: changed int to char
+    {
+        this->data = data;
+        left = NULL;
+        right = NULL;
+    }
+    friend class ExpressionTree;
+};
+
+class ExpressionTree
+{
+private:
+    Node *root;
+public:
+    ExpressionTree()
+    {
+        root = NULL;
+    }
+    bool buildExpressionTree(string exp);
+
+    void postorder_traversal();
+    void postorder_traversal_2();
+
+    void inorder_traversal();
+    void preorder_traversal();
+
+    void inorder_recursive(Node *root);
+    void inorder_recursive();
+    void preorder_recursive(Node *root);
+    void preorder_recursive();
+    void postorder_recursive(Node *root);
+    void postorder_recursive();
+};
+
+bool isOperator(char c)
+{
+    switch(c)
+    {
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool ExpressionTree::buildExpressionTree(string exp)
+{
+    int i;
+    stack <Node *> s;
+    i = exp.length() - 1;
+    Node *pTemp;
+    while ( i >= 0 )
+    {
+        pTemp = new Node(exp[i]);
+        if(isOperator(exp[i]))
+        {
+            if(!s.empty())
+            {
+                pTemp->left = s.top(); s.pop();
+            }
+            else return false;
+
+            if(!s.empty())
+            {
+                pTemp->right = s.top(); s.pop();
+            }
+            else return false;
+        }
+
+        s.push(pTemp);
+        i--;
+    }
+
+    if(!s.empty())
+    {
+        root = s.top(); s.pop();
+        if(!s.empty())
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    else return false;
+}
+
+void ExpressionTree::inorder_recursive(Node *root)
+{
+    if(root != NULL)
+    {
+        inorder_recursive(root->left);
+        cout << root->data << " ";
+        inorder_recursive(root->right);
+    }
+}
+
+void ExpressionTree::inorder_recursive()
+{
+    cout << endl << "In-Order Traversal of Tree is : ";
+    inorder_recursive(root);
+}
+
+void ExpressionTree::preorder_recursive(Node *root)
+{
+    if(root != NULL)
+    {
+        cout << root->data << " ";
+        preorder_recursive(root->left);
+        preorder_recursive(root->right);
+    }
+}
+
+void ExpressionTree::preorder_recursive()
+{
+    cout << endl << "Pre-Order Traversal of Tree is : ";
+    preorder_recursive(root);
+}
+
+void ExpressionTree::postorder_recursive(Node *root)
+{
+    if(root != NULL)
+    {
+        postorder_recursive(root->left);
+        postorder_recursive(root->right);
+        cout << root->data << " ";
+    }
+}
+
+void ExpressionTree::postorder_recursive()
+{
+    cout << endl << "Post-Order Traversal of Tree is : ";
+    postorder_recursive(root);
+}
+
+void ExpressionTree::inorder_traversal()
+{
+    Node *pTemp;
+    stack <Node *> s;
+    pTemp = root;
+    cout << endl << "In-Order Traversal of Tree is : ";
+    do
+    {
+        while(pTemp != NULL)
+        {
+            s.push(pTemp);
+            pTemp = pTemp->left;
+        }
+        if(!s.empty())
+        {
+            pTemp = s.top(); s.pop();
+            cout << pTemp->data << " ";
+            pTemp = pTemp->right;
+        }
+    } while(!s.empty() || pTemp != NULL);
+}
+
+void ExpressionTree::preorder_traversal()
+{
+    Node *pTemp;
+    stack <Node *> s;
+    pTemp = root;
+    cout << endl << "Pre-Order Traversal of Tree is : ";
+    do
+    {
+        while(pTemp != NULL)
+        {
+            cout << pTemp->data << " ";
+            s.push(pTemp);
+            pTemp = pTemp->left;
+        }
+        if(!s.empty())
+        {
+            pTemp = s.top(); s.pop();
+            pTemp = pTemp->right;
+        }
+    } while(!s.empty() || pTemp != NULL);
+}
+
+void ExpressionTree::postorder_traversal_2()
+{
+    stack <Node *> s1;
+    stack <Node *> s2;
+    if(root != NULL)
+    {
+        Node *pTemp = root;
+        s1.push(pTemp);
+        while(!s1.empty())
+        {
+            pTemp = s1.top(); s1.pop();
+            s2.push(pTemp);
+            if(pTemp->left != NULL) s1.push(pTemp->left);
+            if(pTemp->right != NULL) s1.push(pTemp->right);
+        }
+        cout << endl << "Post-Order Traversal of Tree is : ";
+        while(!s2.empty())
+        {
+            pTemp = s2.top(); s2.pop();
+            cout << pTemp->data << " ";
+        }
+    }
+}
+
+void ExpressionTree::postorder_traversal()
+{
+    stack <Node *> s;
+    Node *pTemp = root, *pPrev;
+    cout << endl << "Post-Order Traversal of Tree is : ";
+    do
+    {
+        while(pTemp != NULL)
+        {
+            if(pTemp->right != NULL)
+                s.push(pTemp->right);
+            s.push(pTemp);
+            pTemp = pTemp->left;
+        }
+        if(!s.empty())
+        {
+            pTemp = s.top(); s.pop();
+            if(pTemp->right != NULL && !s.empty() && pTemp->right == s.top())
+            {
+                pPrev = s.top(); s.pop(); s.push(pTemp); pTemp = pPrev;
+            }
+            else
+            {
+                cout << pTemp->data << " ";
+                pTemp = NULL;
+            }
+        }
+    } while(!s.empty());
+}
+
+int main()
+{
+    ExpressionTree bt;
+
+    // Replace this with a valid prefix expression like "+ab" or "*+ab-cd"
+    string expression = "*+ab-cd";
+
+    if(bt.buildExpressionTree(expression) == true)
+    {
+        bt.inorder_traversal();
+        bt.preorder_traversal();
+        bt.postorder_traversal();
+    }
+    else
+    {
+        cout << "Invalid expression" << endl;
+    }
+
+    return 0;
+}

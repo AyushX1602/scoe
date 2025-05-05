@@ -1,0 +1,148 @@
+#include <iostream>
+#include <stack>
+#include <queue>
+#define SIZE 10
+#define INF 999
+#define INFINITY 9999
+using namespace std;
+
+
+class Graph
+{
+	private:
+		int adjMatrix[SIZE][SIZE];
+		int nVertices;
+		int nEdges;
+	public:
+		Graph();
+		Graph(int nV,int nE);		
+		void readGraph();
+		void displayGraph();
+		void spanningTree(int root);		
+};
+
+Graph::Graph()
+	{
+		nVertices = 0 ;
+		nEdges = 0 ;
+
+		for(int i=0;i<nVertices;i++)
+		{
+			for(int j=0;j<nVertices;j++)
+			{
+				adjMatrix[i][j] = INF;	
+			}	
+		}
+	}
+
+Graph::Graph(int nV,int nE)
+	{
+		nVertices = nV ;
+		nEdges = nE ;
+
+		for(int i=0;i<nVertices;i++)
+		{
+			for(int j=0;j<nVertices;j++)
+			{
+				adjMatrix[i][j] = INF;	
+			}	
+		}
+	}
+void Graph::readGraph()
+{
+	int j,u,v,w;
+	for(int i = 0; i < nEdges; i ++)
+	{
+		cout<<"\nEnter Source , destination, Weight Vertex : ";cin>>u>>v>>w;		
+		if(u>=0 && u<nVertices && v>=0 && v < nVertices)
+		{
+			adjMatrix[u][v] = w;
+			adjMatrix[v][u] = w;	
+		}
+		else
+		{
+			cout<<"\nInvalid Edge !!!Re-Enter edge !!!"<<endl;
+			i--;
+		}
+	}
+}
+
+void Graph::displayGraph()
+{
+
+	cout<<"Adjacency Matrix for Graph is : "<<endl;
+	for(int i = 0; i < nVertices; i ++)
+	{
+		for(int j = 0; j < nVertices; j ++)
+		{
+			if(adjMatrix[i][j] != INF)
+				cout<<adjMatrix[i][j]<<" ";
+			else
+				cout<<"0"<<" ";
+		}
+		cout<<endl;
+	}
+	
+}
+
+void Graph::spanningTree(int root){
+
+	int i,v,current;
+	int dist[SIZE];
+	int closest[SIZE];
+	int minDist;
+	
+	for(i=0; i < nVertices; i++)
+	{
+		dist[i] = adjMatrix[root][i];
+		closest[i] = root;
+	}
+	dist[root] = INFINITY;
+	current = root;
+	for ( i = 0; i< nVertices-1; i++)
+	{
+		//Find the node closeset to tree
+		minDist = INF;
+		for(v = 0; v<nVertices; v++)
+		{
+			if(dist[v] < minDist)
+			{
+				current = v;
+				minDist = dist[v];
+			}
+		}	
+		//Add an edge to Spanning tree
+
+		cout<<"\nEdge ("<<closest[current]<<","<<current<<") addedd";
+
+		//Update the distances
+		dist[current] = INFINITY;
+		for(v = 0; v<nVertices; v++)
+		{
+			if (dist[v] < INFINITY &&adjMatrix[current][v]<dist[v])
+			{
+				dist[v] = adjMatrix[current][v];
+				closest[v] = current;
+			}
+		}
+	}
+}
+		
+int main(){
+int E,V,s;
+
+cout<<"\nEnter Graph Details : ";
+cout<<"\nEnter Number of Vertices ";cin>>V;
+cout<<"\nEnter Number of Edges    ";cin>>E;
+Graph g(V,E);
+
+g.readGraph();
+
+g.displayGraph();
+
+cout<<"\nSpanning Tree  ... : ";
+cout<<"\nEnter Root Vertex    ";cin>>s;
+g.spanningTree(s);
+
+return 0;
+}

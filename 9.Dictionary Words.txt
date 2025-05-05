@@ -1,0 +1,350 @@
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Node
+{
+private:
+    Node *left;
+    string word;
+    string meaning;
+    Node *right;
+public:
+    Node()
+    {
+        left = NULL;
+        word = "null";
+        meaning = "null";
+        right = NULL;
+    }
+    Node(string word, string meaning)
+    {
+        left = NULL;
+        this->word = word;
+        this->meaning = meaning;
+        right = NULL;
+    }
+    friend class AVL;
+};
+
+class AVL
+{
+private:
+    Node *root;
+public:
+    AVL()
+    {
+        root = NULL;
+    }
+    AVL(string word, string meaning)
+    {
+        root = new Node(word, meaning);
+    }
+
+    int height()
+    {
+        return height(root);
+    }
+    int height(Node *root)
+    {
+        if(root == NULL)
+            return 0;
+        else if(root->left == NULL && root->right == NULL)
+            return 1;
+        return (max(height(root->left), height(root->right)) + 1);
+    }
+
+    int balanceFactor(Node* root)
+    {
+        return (height(root->left) - height(root->right));
+    }
+
+    Node* leftRotation(Node* A)
+    {
+        Node* B = A->right;
+        A->right = B->left;
+        B->left = A;
+        return B;
+    }
+
+    Node* rightRotation(Node* A)
+    {
+        Node* B = A->left;
+        A->left = B->right;
+        B->right = A;
+        return B;
+    }
+
+    Node* LL(Node* A)
+    {
+        A = rightRotation(A);
+        return A;
+    }
+
+    Node* LR(Node* A)
+    {
+        A->left = leftRotation(A->left);
+        A = rightRotation(A);
+        return A;
+    }
+
+    Node* RR(Node* A)
+    {
+        A = leftRotation(A);
+        return A;
+    }
+
+    Node* RL(Node* A)
+    {
+        A->right = rightRotation(A->right);
+        A = leftRotation(A);
+        return A;
+    }
+
+    void displayAscending()
+    {
+        displayAscending(root);
+    }
+    void displayAscending(Node *root)
+    {
+        if(root != NULL)
+        {
+            displayAscending(root->left);
+            cout<<root->word<<": "<<root->meaning<<endl;
+            displayAscending(root->right);
+        }
+    }
+    void displayDescending()
+    {
+        displayDescending(root);
+    }
+    void displayDescending(Node *root)
+    {
+        if(root != NULL)
+        {
+            displayDescending(root->right);
+            cout<<root->word<<": "<<root->meaning<<endl;
+            displayDescending(root->left);
+        }
+    }
+
+    void insertAVL(string word, string meaning)
+    {
+        root = insertAVL(root, word, meaning);
+        cout<<"Insertion successful."<<endl;
+    }
+
+    Node* insertAVL(Node* root, string word, string meaning)
+    {
+        if(root == NULL)
+        {
+            root = new Node(word, meaning);
+            return root;
+        }
+        else
+        {
+            if(word < root->word)
+            {
+                root->left = insertAVL(root->left, word, meaning);
+                cout<<"Balance factor of "<<root->word<<":"<<balanceFactor(root)<<endl;
+                if(balanceFactor(root) == 2)
+                {
+                    cout<<"Imbalance detected."<<endl;
+                    if(balanceFactor(root->left) == 1)
+                    {
+                        root = LL(root);
+                        cout<<"LL rotation performed."<<endl;
+                    }
+                    else
+                    {
+                        root = LR(root);
+                        cout<<"LR rotation performed."<<endl;
+                    }
+                }
+            }
+            else if(word > root->word)
+            {
+                root->right = insertAVL(root->right, word, meaning);
+                cout<<"Balance factor of "<<root->word<<":"<<balanceFactor(root)<<endl;
+                if(balanceFactor(root) == -2)
+                {
+                    cout<<"Imbalance detected."<<endl;
+                    if(balanceFactor(root->right) == -1)
+                    {
+                        root = RR(root);
+                        cout<<"RR rotation performed."<<endl;
+                    }
+                    else
+                    {
+                        root = RL(root);
+                        cout<<"RL rotation performed."<<endl;
+                    }
+                }
+            }
+            else
+            {
+                cout<<"Duplicate word !!! failed to insert in AVL"<<endl;
+                return root;
+            }
+        }
+        return root;
+    }
+
+    bool searchAVL(string word)
+    {
+        Node *temp = root;
+        int count = 0;
+        if(root == NULL)
+        {
+            cout<<"Tree not present."<<endl;
+            cout<<"No. of comparisons: "<<count<<endl;
+            return false;
+        }
+        else
+        {
+            while(temp != NULL)
+            {
+                if(word > temp->word)
+                {
+                    temp = temp->right;
+                    count++;
+                }
+                else if(word < temp->word)
+                {
+                    temp = temp->left;
+                    count++;
+                }
+                else
+                {
+                    cout<<"Search successful."<<endl;
+                    cout<<"No. of comparisons: "<<count+1<<endl;
+                    return true;
+                }
+            }
+            cout<<"Search unsuccessful"<<endl;
+            cout<<"No. of comparisons: "<<count+1<<endl;
+            return false;
+        }
+    }
+    void dltAVL(string word)
+    {
+        root = dltAVL(root, word);
+        cout<<"Deletion successful."<<endl;
+    }
+    Node* dltAVL(Node *root, string word)
+    {
+        if(word<root->word)
+        {
+            root->left = dltAVL(root->left, word);
+            cout<<"Balance factor of "<<root->word<<":"<<balanceFactor(root)<<endl;
+                if(balanceFactor(root) == -2)
+                {
+                    cout<<"Imbalance detected."<<endl;
+                    if(balanceFactor(root->right) <= 0)
+                    {
+                        root = RR(root);
+                        cout<<"RR rotation performed."<<endl;
+                    }
+                    else
+                    {
+                        root = RL(root);
+                        cout<<"RL rotation performed."<<endl;
+                    }
+                }
+            return root;
+        }
+        else if(word>root->word)
+        {
+            root->right = dltAVL(root->right, word);
+            cout<<"Balance factor of "<<root->word<<":"<<balanceFactor(root)<<endl;
+                if(balanceFactor(root) == 2)
+                {
+                    cout<<"Imbalance detected."<<endl;
+                    if(balanceFactor(root->left) >=0)
+                    {
+                        root = LL(root);
+                        cout<<"LL rotation performed."<<endl;
+                    }
+                    else
+                    {
+                        root = LR(root);
+                        cout<<"LR rotation performed."<<endl;
+                    }
+                }
+            return root;
+        }
+        else
+        {
+            if(root->right == NULL)
+                return root->left;
+            else
+            {
+                Node* pSuc = root->right;
+                while(pSuc->left != NULL)
+                {
+                    pSuc = pSuc->left;
+                }
+                root->word = pSuc->word;
+                root->meaning = pSuc->meaning;
+                root->right = dltAVL(root->right, root->word);
+                cout<<"Balance factor of "<<root->word<<":"<<balanceFactor(root)<<endl;
+                if(balanceFactor(root) == 2)
+                {
+                    cout<<"Imbalance detected."<<endl;
+                    if(balanceFactor(root->left) >= 0)
+                    {
+                        root = LL(root);
+                        cout<<"LL rotation performed."<<endl;
+                    }
+                    else
+                    {
+                        root = LR(root);
+                        cout<<"LR rotation performed."<<endl;
+                    }
+                }
+            }
+            return root;
+        }
+    }
+
+};
+int main()
+{
+    AVL b;
+    int choice;
+    string w,m;
+    do
+    {
+        cout<<"Enter your choice:\n1.Display Ascending\n2.Display Descending\n3.Insert\n4.Search\n5.Delete\n";
+        cout<<"6.Exit"<<endl;
+        cin>>choice;
+        switch(choice)
+        {
+            case 1: cout<<"Displaying BST in Ascending order..."<<endl;
+                    b.displayAscending();
+                    break;
+            case 2: cout<<"Displaying BST in Descending..."<<endl;
+                    b.displayDescending();
+                    break;
+            case 3: cout<<"Enter the word you want to insert: ";
+                    cin>>w;
+                    cout<<"Enter meaning of the word: ";
+                    cin>>m;
+                    b.insertAVL(w, m);
+                    break;
+            case 4: cout<<"Enter word you want to search: ";
+                    cin>>w;
+                    b.searchAVL(w);
+                    break;
+            case 5: cout<<"Enter word you want to delete: ";
+                    cin>>w;
+                    b.dltAVL(w);
+                    break;
+            case 6: cout<<"Exiting...";
+                    break;
+            default:cout<<"Invalid choice."<<endl;
+        }
+    } while (choice < 6);
+    return 0;
+}

@@ -1,0 +1,155 @@
+#include <iostream>
+using namespace std;
+
+const int TABLE_SIZE = 10;
+
+class TelephoneBook {
+private:
+    long long linearTable[TABLE_SIZE];
+    long long quadraticTable[TABLE_SIZE];
+
+public:
+    TelephoneBook() {
+        for (int i = 0; i < TABLE_SIZE; ++i) {
+            linearTable[i] = -1;
+            quadraticTable[i] = -1;
+        }
+    }
+
+    int hashFunction(long long phoneNumber) {
+        return phoneNumber % TABLE_SIZE;
+    }
+
+    void insertLinear(long long phoneNumber) {
+        int index = hashFunction(phoneNumber);
+        int start = index;
+
+        while (linearTable[index] != -1) {
+            index = (index + 1) % TABLE_SIZE;
+            if (index == start) {
+                cout << "Linear table full!\n";
+                return;
+            }
+        }
+        linearTable[index] = phoneNumber;
+        cout << "Inserted " << phoneNumber << " using Linear Probing.\n";
+    }
+
+    void insertQuadratic(long long phoneNumber) {
+        int index = hashFunction(phoneNumber);
+        int i = 1;
+        int originalIndex = index;
+
+        while (quadraticTable[index] != -1) {
+            index = (originalIndex + i * i) % TABLE_SIZE;
+            i++;
+            if (i == TABLE_SIZE) {
+                cout << "Quadratic table full!\n";
+                return;
+            }
+        }
+        quadraticTable[index] = phoneNumber;
+        cout << "Inserted " << phoneNumber << " using Quadratic Probing.\n";
+    }
+
+    int searchLinear(long long phoneNumber, int &comparisons) {
+        int index = hashFunction(phoneNumber);
+        int start = index;
+        comparisons = 1;
+
+        while (linearTable[index] != phoneNumber) {
+            index = (index + 1) % TABLE_SIZE;
+            comparisons++;
+            if (linearTable[index] == -1 || index == start)
+                return -1;
+        }
+        return index;
+    }
+
+    int searchQuadratic(long long phoneNumber, int &comparisons) {
+        int index = hashFunction(phoneNumber);
+        int i = 1;
+        int originalIndex = index;
+        comparisons = 1;
+
+        while (quadraticTable[index] != phoneNumber) {
+            index = (originalIndex + i * i) % TABLE_SIZE;
+            comparisons++;
+            i++;
+            if (quadraticTable[index] == -1 || i == TABLE_SIZE)
+                return -1;
+        }
+        return index;
+    }
+
+    void displayTables() {
+        cout << "\nLinear Probing Table:\n";
+        for (int i = 0; i < TABLE_SIZE; ++i)
+            cout << i << " : " << linearTable[i] << endl;
+
+        cout << "\nQuadratic Probing Table:\n";
+        for (int i = 0; i < TABLE_SIZE; ++i)
+            cout << i << " : " << quadraticTable[i] << endl;
+    }
+};
+
+int main() {
+    TelephoneBook book;
+    int choice;
+
+    do {
+        cout << "\n--- Telephone Book Menu ---\n";
+        cout << "1. Insert Phone Number\n";
+        cout << "2. Search Phone Number\n";
+        cout << "3. Display Hash Tables\n";
+        cout << "4. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: {
+                long long number;
+                cout << "Enter phone number to insert: ";
+                cin >> number;
+                book.insertLinear(number);
+                book.insertQuadratic(number);
+                break;
+            }
+
+            case 2: {
+                long long number;
+                cout << "Enter phone number to search: ";
+                cin >> number;
+                int linearComp = 0, quadComp = 0;
+                int linPos = book.searchLinear(number, linearComp);
+                int quadPos = book.searchQuadratic(number, quadComp);
+
+                cout << "\nSearch Results:\n";
+                if (linPos != -1)
+                    cout << "Linear: Found at index " << linPos << " with " << linearComp << " comparisons.\n";
+                else
+                    cout << "Linear: Not found with " << linearComp << " comparisons.\n";
+
+                if (quadPos != -1)
+                    cout << "Quadratic: Found at index " << quadPos << " with " << quadComp << " comparisons.\n";
+                else
+                    cout << "Quadratic: Not found with " << quadComp << " comparisons.\n";
+                break;
+            }
+
+            case 3:
+                book.displayTables();
+                break;
+
+            case 4:
+                cout << "Exiting...\n";
+                break;
+
+            default:
+                cout << "Invalid choice. Try again.\n";
+        }
+
+    } while (choice != 4);
+
+    return 0;
+}

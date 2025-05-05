@@ -1,0 +1,175 @@
+#include<iostream>
+#include<string>
+using namespace std;
+
+class node
+{
+    private:
+        string key;
+        string value;
+        node* next;
+    public:
+        node(string k, string v)
+        {
+            key=k;
+            value=v;
+            next=NULL;
+        }
+        friend class Dictionary;
+        
+};
+
+class Dictionary
+{
+    private:
+        static const int table_size=10;
+        node* table[table_size];
+        
+    public:
+        Dictionary()
+        {
+            for(int i=0;i<table_size;i++)
+            {
+                table[i]=NULL;
+            }
+        }
+        
+        int hashFunction(string key)
+        {
+            int hash=0;
+            for(char c:key)
+            {
+                hash+=c;
+            }
+            return hash%table_size;
+        }
+        
+        void insert(string key, string value)
+        {
+            int index=hashFunction(key);
+            node* current=table[index];
+            while(current!=NULL)
+            {
+                if(current->key==key)
+                {
+                    cout<<"Key already exists. Use a unique key"<<endl;
+                    return;
+                    
+                }
+                current=current->next;
+            }
+            node* newnode=new node(key, value);
+            newnode->next=table[index];
+            table[index]=newnode;
+            cout<<"Inserted("<<key<<", "<<value<<")"<<endl;
+        }
+        
+        void search(string key)
+        {
+            int index=hashFunction(key);
+            node* current=table[index];
+            while(current!=NULL)
+            {
+                if(current->key==key)
+                {
+                    cout<<"key Found! "<<"key:"<<key<<", value:"<<current->value<<endl;
+                    return;
+                }
+                current=current->next;
+            }
+            cout<<"Key not found!"<<endl;
+        }
+        
+        void remove(string key)
+        {
+            int index=hashFunction(key);
+            node* current=table[index];
+            node* prev=NULL;
+            
+            while(current!=NULL)
+            {
+                if(current->key==key)
+                {
+                    if(prev==NULL)
+                    {
+                        table[index]=current->next;
+                    }
+                    else
+                    {
+                        prev->next=current->next;
+                    }
+                    delete current;
+                    cout<<"Key "<<key<<" Deleted successfully!"<<endl;
+                    return;
+                }
+                prev=current;
+                current=current->next;
+            }
+            cout<<"Key not found!"<<endl;
+        }
+        
+        void display()
+        {
+            cout<<"Hash Table "<<endl;
+            for(int i=0;i<table_size;i++)
+            {
+                cout<<"["<<i<<"]: ";
+                node* current=table[i];
+                while(current!=NULL)
+                {
+                    cout<<"("<<current->key<<", "<<current->value<<") -> ";
+                    current=current->next;
+                }
+                cout<<"NULL\n";
+            }
+        }
+};
+
+int main()
+{
+    Dictionary D;
+    string key, value;
+    int choice;
+    
+    while(choice!=5)
+    {
+        cout<<"---Dictionary Menu---"<<endl;
+        cout<<"1. Insert\n2. Search\n3. Delete\n4. Display\n5.Exit"<<endl;
+        cout<<"Enter your choice:";
+        cin>>choice;
+        switch(choice)
+        {
+            case 1:
+                cout<<"Enter key:";
+                cin>>key;
+                cout<<"Enter value:";
+                cin>>value;
+                D.insert(key, value);
+                break;
+                
+            case 2:
+                cout<<"Enter the key to search:";
+                cin>>key;
+                D.search(key);
+                break;
+                
+            case 3:
+                cout<<"Enter the key to delete:";
+                cin>>key;
+                D.remove(key);
+                break;
+                
+            case 4:
+                D.display();
+                break;
+                
+            case 5:cout<<"End of the program!"<<endl;
+                   return 0;
+                   
+            default:cout<<"Please enter a valid choice!"<<endl;
+                break;
+        }
+        
+    }
+    return 0;
+}
