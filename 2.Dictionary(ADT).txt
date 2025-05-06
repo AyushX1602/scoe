@@ -1,175 +1,250 @@
-#include<iostream>
-#include<string>
+#include <iostream>
+#include <string>
+#include <iomanip>
 using namespace std;
 
-class node
+class Word
 {
     private:
-        string key;
-        string value;
-        node* next;
+        string word;
+        string meaning;
+        int chain;
+
     public:
-        node(string k, string v)
+        Word()
         {
-            key=k;
-            value=v;
-            next=NULL;
+            word = "NULL";
+            meaning = "NULL";
+            chain = -1;
         }
+
+        void input()
+        {
+            cout<<"\nEnter word and meaning below:\nWord: ";
+            cin>>word;
+            cout<<"Meaning: ";
+            cin>>meaning;
+        }
+        void display ()
+        {
+            cout<<setw(10)<<word<<setw(40)<<meaning<<setw(7)<<chain<<endl;
+        }
+
         friend class Dictionary;
-        
 };
 
 class Dictionary
 {
     private:
-        static const int table_size=10;
-        node* table[table_size];
-        
+        Word hashTable[10];
     public:
         Dictionary()
         {
-            for(int i=0;i<table_size;i++)
+            Word w;
+            for(int i = 0; i < 10; i++)
             {
-                table[i]=NULL;
+                hashTable[i] = w;
             }
         }
-        
+
         int hashFunction(string key)
         {
-            int hash=0;
-            for(char c:key)
+            int sum = 0;
+            for(int i = 0; i < key.length(); i++)
             {
-                hash+=c;
+                sum += key[i];
             }
-            return hash%table_size;
+            return (sum %10);
         }
-        
-        void insert(string key, string value)
+
+        bool insert(Word w)
         {
-            int index=hashFunction(key);
-            node* current=table[index];
-            while(current!=NULL)
+            int homeindex = hashFunction(w.word);
+            Word temp;
+            if(hashTable[homeindex].word == "NULL")
             {
-                if(current->key==key)
+                hashTable[homeindex] = w;
+                return true;
+            }
+            else if(hashFunction(hashTable[homeindex].word) != homeindex)
+//replacement
+            {
+                temp = hashTable[homeindex];
+                hashTable[homeindex] = w;
+                while(hashTable[homeindex].chain != -1)
                 {
-                    cout<<"Key already exists. Use a unique key"<<endl;
-                    return;
-                    
+                    homeindex = hashTable[homeindex].chain;
                 }
-                current=current->next;
-            }
-            node* newnode=new node(key, value);
-            newnode->next=table[index];
-            table[index]=newnode;
-            cout<<"Inserted("<<key<<", "<<value<<")"<<endl;
-        }
-        
-        void search(string key)
-        {
-            int index=hashFunction(key);
-            node* current=table[index];
-            while(current!=NULL)
-            {
-                if(current->key==key)
+                int probe = 1;
+                int newindex = (homeindex + probe) % 10;
+                while (newindex != homeindex)
                 {
-                    cout<<"key Found! "<<"key:"<<key<<", value:"<<current->value<<endl;
-                    return;
-                }
-                current=current->next;
-            }
-            cout<<"Key not found!"<<endl;
-        }
-        
-        void remove(string key)
-        {
-            int index=hashFunction(key);
-            node* current=table[index];
-            node* prev=NULL;
-            
-            while(current!=NULL)
-            {
-                if(current->key==key)
-                {
-                    if(prev==NULL)
+                    if(hashTable[newindex].word == "NULL")
                     {
-                        table[index]=current->next;
+                        hashTable[newindex] = temp;
+                        hashTable[homeindex].chain = newindex;
+                        return true;
                     }
                     else
                     {
-                        prev->next=current->next;
+                        probe++;
+                        newindex = (homeindex + probe) % 10;
                     }
-                    delete current;
-                    cout<<"Key "<<key<<" Deleted successfully!"<<endl;
-                    return;
                 }
-                prev=current;
-                current=current->next;
+                cout<<"Dictionary full.";
+                return false;
             }
-            cout<<"Key not found!"<<endl;
-        }
-        
-        void display()
-        {
-            cout<<"Hash Table "<<endl;
-            for(int i=0;i<table_size;i++)
+            else //collision
             {
-                cout<<"["<<i<<"]: ";
-                node* current=table[i];
-                while(current!=NULL)
+                while(hashTable[homeindex].chain != -1)
                 {
-                    cout<<"("<<current->key<<", "<<current->value<<") -> ";
-                    current=current->next;
+                    homeindex = hashTable[homeindex].chain;
                 }
-                cout<<"NULL\n";
+                int probe = 1;
+                int newindex = (homeindex + probe) % 10;
+                while (newindex != homeindex)
+                {
+                    if(hashTable[newindex].word == "NULL")
+
+
+                    {
+                        hashTable[newindex] = w;
+                        hashTable[homeindex].chain = newindex;
+                        return true;
+                    }
+                    else
+                    {
+                        probe++;
+                        newindex = (homeindex + probe) % 10;
+                    }
+                }
+                cout<<"Dictionary full.";
+                return false;
+            }
+        }
+
+        bool find(string word)
+        {
+            int homeindex = hashFunction(word);
+            if(hashTable[homeindex].word == word)
+            {
+                cout<<"Search successful!";
+                cout<<"\n"<<hashTable[homeindex].word<<":"<<hashTable[homeindex].meaning;
+                cout<<"\nNo. of comparisons required to search: 1";
+                return true;
+            }
+            else
+            {
+                int  newindex = hashTable[homeindex].chain;
+                int counter = 2;
+
+                while(newindex != -1)
+                {
+                    if(hashTable[newindex].word == word)
+                    {
+                        cout<<"Search successful!";
+                        cout<<"\n"<<hashTable[newindex].word<<":"<<hashTable[newindex].meaning;
+                        cout<<"\nNo. of comparisons required to search:"<<counter;
+                        return true;
+                    }
+                    else
+                    {
+                        newindex = hashTable[newindex].chain;
+                        counter++;
+                    }
+                }
+                return false;
+            }
+        }
+
+        bool dlt(string word)
+        {
+            Word w;
+            int homeindex = hashFunction(word);
+            if(hashTable[homeindex].word == word)
+            {
+                hashTable[homeindex] = w;
+                cout<<"Deletion successful!";
+                return true;
+            }
+            else
+            {
+                int  newindex = hashTable[homeindex].chain;
+                while(newindex != -1)
+                {
+                    if(hashTable[newindex].word == word)
+                    {
+                        hashTable[newindex] = w;
+                        cout<<"Deletion successful!";
+                        return true;
+                    }
+                    else
+                    {
+                        newindex = hashTable[newindex].chain;
+                    }
+                }
+                return false;
+            }
+        }
+
+        void show()
+        {
+
+cout<<setw(7)<<"Index"<<setw(10)<<"Word"<<setw(40)<<"Meaning"<<setw(7)<<"Chain"<<endl;
+            for(int i = 0; i < 10; i++)
+            {
+                cout<<setw(7)<<i;
+                hashTable[i].display();
             }
         }
 };
 
 int main()
 {
-    Dictionary D;
-    string key, value;
+    Word w;
+    Dictionary d;
     int choice;
-    
-    while(choice!=5)
+    string wrd;
+
+    do
     {
-        cout<<"---Dictionary Menu---"<<endl;
-        cout<<"1. Insert\n2. Search\n3. Delete\n4. Display\n5.Exit"<<endl;
-        cout<<"Enter your choice:";
+        cout<<"\nEnter you choice:\n1. Insert\n2. Find\n3. Delete\n4.Display\n5. Exit..."<<endl;
         cin>>choice;
+
         switch(choice)
         {
-            case 1:
-                cout<<"Enter key:";
-                cin>>key;
-                cout<<"Enter value:";
-                cin>>value;
-                D.insert(key, value);
-                break;
-                
-            case 2:
-                cout<<"Enter the key to search:";
-                cin>>key;
-                D.search(key);
-                break;
-                
-            case 3:
-                cout<<"Enter the key to delete:";
-                cin>>key;
-                D.remove(key);
-                break;
-                
-            case 4:
-                D.display();
-                break;
-                
-            case 5:cout<<"End of the program!"<<endl;
-                   return 0;
-                   
-            default:cout<<"Please enter a valid choice!"<<endl;
-                break;
+            case 1: w.input();
+                    if(d.insert(w) == true)
+                        cout<<"\nData inserted successfully.\n";
+                    else
+                        cout<<"\nData insertion unsuccessful.\n";
+                    break;
+
+            case 2: cout<<"\nEnter word to search: ";
+                    cin>>wrd;
+                    if(d.find(wrd) == true)
+                        cout<<"";
+                    else
+                        cout<<"\nSearch unsuccessful.";
+                    break;
+
+            case 3: cout<<"\nEnter word to delete: ";
+                    cin>>wrd;
+                    if(d.dlt(wrd) == true)
+                        cout<<"";
+                    else
+                        cout<<"\nDeletion unsuccessful.";
+                    break;
+
+            case 4: cout<<"Displaying Dictionary:\n";
+                    d.show();
+                    break;
+
+            case 5: cout<<"\nExiting...";
+                    break;
+
+            default: cout<<"\nInvalid Input.";
         }
-        
-    }
+    }while(choice < 5);
     return 0;
 }
